@@ -144,3 +144,28 @@ AUTH_USER_MODEL = 'bookshelf.CustomUser'
 CSP_DEFAULT_SRC = ("'self'",)
 CSP_STYLE_SRC = ("'self'", "https://fonts.googleapis.com")
 CSP_SCRIPT_SRC = ("'self'",)
+
+# --- HTTPS and SSL Enforcement ---
+# Redirect all HTTP requests to HTTPS
+SECURE_SSL_REDIRECT = True
+
+# HTTP Strict Transport Security (HSTS)
+# Tells the browser to only connect via HTTPS for the next year
+SECURE_HSTS_SECONDS = 31536000 
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
+
+# --- Secure Cookies ---
+# Cookies will only be sent over HTTPS connections
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+
+# --- Security Headers ---
+# Prevent the site from being loaded in an iframe (Clickjacking protection)
+X_FRAME_OPTIONS = 'DENY'
+
+# Prevent browsers from guessing the content type (MIME-sniffing protection)
+SECURE_CONTENT_TYPE_NOSNIFF = True
+
+# Enable browser's reflected XSS filter
+SECURE_BROWSER_XSS_FILTER = True
