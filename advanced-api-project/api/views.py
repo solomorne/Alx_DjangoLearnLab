@@ -59,8 +59,8 @@ class BookDeleteView(generics.DestroyAPIView):
 # Enable filtering, search, and ordering
     filter_backends = [
         rest_framework.DjangoFilterBackend,
-        SearchFilter,
-        OrderingFilter,
+        filters.SearchFilter,
+        filters.OrderingFilter,
     ]
 
     # Filtering by model fields
