@@ -23,3 +23,17 @@ The BookListView supports filtering, searching, and ordering.
 /api/books/?ordering=-publication_year
 
 Multiple query parameters can be combined.
+
+## API Testing
+
+Unit tests are written using Django REST Framework’s APITestCase.
+
+### What is tested
+- CRUD operations for Book endpoints
+- Filtering, searching, and ordering
+- Authentication and permission enforcement
+
+### Running tests
+python manage.py test api
+
+All tests run against a temporary test database.
