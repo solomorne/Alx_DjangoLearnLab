@@ -1,6 +1,6 @@
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
-from django_filters.rest_framework import DjangoFilterBackend
+from django_filters import rest_framework
 from rest_framework.filters import SearchFilter, OrderingFilter
 
 from .models import Book
@@ -58,7 +58,7 @@ class BookDeleteView(generics.DestroyAPIView):
 
 # Enable filtering, search, and ordering
     filter_backends = [
-        DjangoFilterBackend,
+        rest_framework.DjangoFilterBackend,
         SearchFilter,
         OrderingFilter,
     ]
