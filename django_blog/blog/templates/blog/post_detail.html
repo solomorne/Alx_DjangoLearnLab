@@ -13,7 +13,7 @@
 <a href="{% url 'post-list' %}">Back to Posts</a>
 
 {% endblock %}
-    
+
 {% if user.is_authenticated %}
     <h4>Add a Comment</h4>
     <form method="POST" action="{% url 'comment-create' object.pk %}">
@@ -24,3 +24,12 @@
 {% else %}
     <p><a href="{% url 'login' %}">Login</a> to comment.</p>
 {% endif %}
+
+<p>
+    Tags:
+    {% for tag in object.tags.all %}
+        <a href="{% url 'tag-posts' tag.name %}">{{ tag.name }}</a>
+    {% empty %}
+        No tags
+    {% endfor %}
+</p>

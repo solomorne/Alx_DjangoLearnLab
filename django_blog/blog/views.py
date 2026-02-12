@@ -14,6 +14,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.urls import reverse_lazy, reverse
 from .models import Post, Comment
 from .forms import CommentForm
+from django.db.models import Q
 
 # Create your views here.
 def home(request):
@@ -65,27 +66,47 @@ class PostDetailView(DetailView):
 # 🔹 Create View (Authenticated Users Only)
 class PostCreateView(LoginRequiredMixin, CreateView):
     model = Post
-    fields = ['title', 'content']
+    form_class = PostForm
     template_name = 'blog/post_form.html'
 
     def form_valid(self, form):
         form.instance.author = self.request.user
-        return super().form_valid(form)
+        response = super().form_valid(form)
+
+        tags_input = form.cleaned_data.get('tags')
+        if tags_input:
+            tag_names = [tag.strip() for tag in tags_input.split(',')]
+            for name in tag_names:
+                tag, created = Tag.objects.get_or_create(name=name)
+                self.object.tags.add(tag)
+
+        return response
+
 
 
 # 🔹 Update View (Only Author Can Edit)
 class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Post
-    fields = ['title', 'content']
+    form_class = PostForm
     template_name = 'blog/post_form.html'
 
     def form_valid(self, form):
-        form.instance.author = self.request.user
-        return super().form_valid(form)
+        response = super().form_valid(form)
+
+        self.object.tags.clear()
+        tags_input = form.cleaned_data.get('tags')
+        if tags_input:
+            tag_names = [tag.strip() for tag in tags_input.split(',')]
+            for name in tag_names:
+                tag, created = Tag.objects.get_or_create(name=name)
+                self.object.tags.add(tag)
+
+        return response
 
     def test_func(self):
         post = self.get_object()
         return self.request.user == post.author
+
 
 
 # 🔹 Delete View (Only Author Can Delete)
@@ -133,3 +154,32 @@ class CommentCreateView(LoginRequiredMixin, CreateView):
 
     def get_success_url(self):
         return reverse('post-detail', kwargs={'pk': self.kwargs['pk']})
+    
+class SearchResultsView(ListView):
+    model = Post
+    template_name = 'blog/search_results.html'
+    context_object_name = 'posts'
+
+    def get_queryset(self):
+        query = self.request.GET.get('q')
+        if query:
+            return Post.objects.filter(
+                Q(title__icontains=query) |
+                Q(content__icontains=query) |
+                Q(tags__name__icontains=query)
+            ).distinct()
+        return Post.objects.none()
+
+class TagPostListView(ListView):
+    model = Post
+    template_name = 'blog/tag_posts.html'
+    context_object_name = 'posts'
+
+    def get_queryset(self):
+        return Post.objects.filter(tags__name=self.kwargs['tag_name'])
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['tag_name'] = self.kwargs['tag_name']
+        return context
+
