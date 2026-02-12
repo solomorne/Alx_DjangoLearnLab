@@ -11,7 +11,7 @@ from django.views.generic import (
     DeleteView
 )
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 from .models import Post, Comment
 from .forms import CommentForm
 
@@ -61,20 +61,6 @@ class PostDetailView(DetailView):
         context['comments'] = self.object.comments.all().order_by('-created_at')
         context['comment_form'] = CommentForm()
         return context
-
-    def post(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        form = CommentForm(request.POST)
-
-        if request.user.is_authenticated:
-            if form.is_valid():
-                comment = form.save(commit=False)
-                comment.post = self.object
-                comment.author = request.user
-                comment.save()
-                return redirect('post-detail', pk=self.object.pk)
-        return redirect('login')
-
 
 # 🔹 Create View (Authenticated Users Only)
 class PostCreateView(LoginRequiredMixin, CreateView):
@@ -134,3 +120,16 @@ class CommentDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     def test_func(self):
         comment = self.get_object()
         return self.request.user == comment.author
+
+class CommentCreateView(LoginRequiredMixin, CreateView):
+    model = Comment
+    fields = ['content']
+
+    def form_valid(self, form):
+        post = get_object_or_404(Post, pk=self.kwargs['pk'])
+        form.instance.post = post
+        form.instance.author = self.request.user
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse('post-detail', kwargs={'pk': self.kwargs['pk']})
