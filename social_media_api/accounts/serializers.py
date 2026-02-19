@@ -6,9 +6,6 @@ User = get_user_model()
 
 
 class UserSerializer(serializers.ModelSerializer):
-    followers_count = serializers.SerializerMethodField()
-    following_count = serializers.SerializerMethodField()
-
     class Meta:
         model = User
         fields = [
@@ -17,15 +14,7 @@ class UserSerializer(serializers.ModelSerializer):
             'email',
             'bio',
             'profile_picture',
-            'followers_count',
-            'following_count'
         ]
-
-    def get_followers_count(self, obj):
-        return obj.followers.count()
-
-    def get_following_count(self, obj):
-        return obj.following.count()
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -36,7 +25,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         fields = ['username', 'email', 'password']
 
     def create(self, validated_data):
-        user = get_user_model().objects.create_user(
+        user = User.objects.create_user(
             username=validated_data['username'],
             email=validated_data['email'],
             password=validated_data['password']
