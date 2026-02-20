@@ -89,14 +89,10 @@ class LikePostView(generics.GenericAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, pk):
-        # REQUIRED LINE
         post = generics.get_object_or_404(Post, pk=pk)
 
-        # REQUIRED LINE
-        like, created = Like.objects.get_or_create(
-            user=request.user,
-            post=post
-        )
+        # REQUIRED LINE (must appear exactly like this)
+        like, created = Like.objects.get_or_create(user=request.user, post=post)
 
         if not created:
             like.delete()
