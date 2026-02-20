@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from rest_framework.views import APIView
-from rest_framework import viewsets, filters, permissions, status
+from rest_framework import viewsets, filters, permissions, status, generics
 from rest_framework.permissions import IsAuthenticated
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.response import Response
@@ -84,3 +84,22 @@ class FeedView(APIView):
 
         serializer = PostSerializer(posts, many=True)
         return Response(serializer.data)
+    
+class LikePostView(generics.GenericAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, pk):
+        # REQUIRED LINE
+        post = generics.get_object_or_404(Post, pk=pk)
+
+        # REQUIRED LINE
+        like, created = Like.objects.get_or_create(
+            user=request.user,
+            post=post
+        )
+
+        if not created:
+            like.delete()
+            return Response({"message": "Post unliked"}, status=status.HTTP_200_OK)
+
+        return Response({"message": "Post liked"}, status=status.HTTP_201_CREATED)
