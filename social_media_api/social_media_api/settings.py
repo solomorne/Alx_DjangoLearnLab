@@ -30,6 +30,8 @@ DEBUG = False
 
 ALLOWED_HOSTS = ['socialmedia.herokuapp.com']
 
+PORT = os.environ.get("PORT")
+
 
 # Application definition
 
